@@ -37,7 +37,7 @@ class RFM69_SessionKey: public RFM69 {
     static volatile uint8_t SESSION_KEY_REQUESTED; // flag in CTL byte indicating this packet is a request for a session key
     static volatile uint8_t SESSION_KEY; // set to the session key for a particular transmission
     static volatile uint8_t INCOMING_SESSION_KEY; // set on an incoming packet and used to decide if receiveDone should be true and data should be processed
-    
+	
     RFM69_SessionKey(uint8_t slaveSelectPin=RF69_SPI_CS, uint8_t interruptPin=RF69_IRQ_PIN, bool isRFM69HW=false, uint8_t interruptNum=RF69_IRQ_NUM) :
       RFM69(slaveSelectPin, interruptPin, isRFM69HW, interruptNum) {
     }
@@ -53,7 +53,7 @@ class RFM69_SessionKey: public RFM69 {
     bool sessionKeyEnabled();
 
   protected:
-    bool interruptHook(uint8_t CTLbyte);
+    void interruptHook(uint8_t CTLbyte);
     void sendFrame(byte toAddress, const void* buffer, byte size, bool requestACK=false, bool sendACK=false);  // Need this one to match the RFM69 library
     void sendFrame(uint8_t toAddress, const void* buffer, uint8_t size, bool requestACK, bool sendACK, bool sessionRequested, bool sessionIncluded); // two parameters added for session key support
     void sendWithSession(uint8_t toAddress, const void* buffer, uint8_t bufferSize, bool requestACK=false, uint8_t retryWaitTime=40); // new function to transparently handle session without sketch needing to change

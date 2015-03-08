@@ -166,7 +166,7 @@ void RFM69_SessionKey::sendFrame(uint8_t toAddress, const void* buffer, uint8_t 
 //=============================================================================
 // interruptHook() - Gets called by the base class interruptHandler right after the header is fetched
 //=============================================================================
-bool RFM69_SessionKey::interruptHook(uint8_t CTLbyte) {
+void RFM69_SessionKey::interruptHook(uint8_t CTLbyte) {
   SESSION_KEY_REQUESTED = CTLbyte & RFM69_CTL_EXT1; // extract session key request flag
   SESSION_KEY_INCLUDED = CTLbyte & RFM69_CTL_EXT2; //extract session key included flag
   // if a new session key was requested, send it right here in the interrupt to avoid having to handle it in sketch manually, and for greater speed
@@ -179,14 +179,16 @@ bool RFM69_SessionKey::interruptHook(uint8_t CTLbyte) {
     // send it!
     sendFrame(SENDERID, null, 0, false, false, true, true);
     // don't process any data
-    return false;
+	DATALEN = 0;
+    return;
   }
   // if both session key bits are set, the incoming packet has a new session key
   // set the session key and do not process data
   if (sessionKeyEnabled() && SESSION_KEY_REQUESTED && SESSION_KEY_INCLUDED) {
     SESSION_KEY = SPI.transfer(0);
     // don't process any data
-    return false;
+	DATALEN = 0;
+    return;
   }
   // if a session key is included, make sure it is the key we expect
   // if the key does not match, do not set DATA and return false
@@ -194,11 +196,12 @@ bool RFM69_SessionKey::interruptHook(uint8_t CTLbyte) {
     INCOMING_SESSION_KEY = SPI.transfer(0);
     if (INCOMING_SESSION_KEY != SESSION_KEY){
       // don't process any data
-      return false;
+	  DATALEN = 0;
+      return;
     }
     // if keys do match, actual data is payload - 4 instead of 3 to account for key
     DATALEN = PAYLOADLEN - 4;
-    return true;
+    return;
   }
 }
 
